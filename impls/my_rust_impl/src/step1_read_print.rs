@@ -1,15 +1,22 @@
+use std::io::Write;
+mod types;
+mod printer;
 mod reader;
 
-fn read(input: String) -> String {
+use crate::printer::pr_str;
+use crate::reader::read_str;
+use crate::types::{MalType, MalRet};
+
+fn read(input: String) -> MalRet {
+    read_str(input)
+}
+
+fn eval(input: MalRet) -> MalRet {
     input
 }
 
-fn eval(input: String) -> String {
-    input
-}
-
-fn print(input: String) -> String {
-    input
+fn print(input: MalRet) -> String {
+    pr_str(&input)
 }
 
 fn rep(input: String) -> String {
@@ -19,9 +26,10 @@ fn rep(input: String) -> String {
 fn main() -> Result<(), std::io::Error> {
     loop {
         let mut input = String::new();
-        println!("user> ");
+        print!("user> ");
+        std::io::stdout().flush().unwrap();
         std::io::stdin().read_line(&mut input)?;
-        rep(input);
+        println!("{}", rep(input));
     }
 }
 
