@@ -21,6 +21,29 @@ pub fn pr_maltype(mal: &MalType) -> String {
             result_string.push_str(&result.join(" "));
             result_string.push_str(")");
             return result_string;
+        },
+        MalType::Vector(v) => {
+            let mut result : Vec<String> = vec![];
+            for item in v.iter() {
+                result.push(pr_maltype(&item));
+            }
+            let mut result_string = String::new(); 
+            result_string.push_str("[");
+            result_string.push_str(&result.join(" "));
+            result_string.push_str("]");
+            return result_string;
+        },
+        MalType::Hash(h) => {
+            let mut result : Vec<String> = vec![];
+            for (k, v) in h.iter() {
+                result.push(k.clone());
+                result.push(pr_maltype(v));
+            }
+            let mut result_string = String::new(); 
+            result_string.push_str("{");
+            result_string.push_str(&result.join(" "));
+            result_string.push_str("}");
+            return result_string;
         }
     }
 }

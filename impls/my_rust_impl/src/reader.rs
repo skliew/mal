@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use crate::types::{MalType, MalRet};
+use crate::types::{MalType, MalRet, to_hashmap};
 
 pub struct Reader {
     pos: usize,
@@ -48,16 +48,21 @@ pub fn tokenize(input: &str) -> Vec<String> {
     result
 }
 
-pub fn read_list(reader: &mut Reader) -> MalRet {
+pub fn read_list(reader: &mut Reader, end: &str) -> MalRet {
     reader.next();
     let mut result : Vec<MalType> = vec![];
     loop {
         let c = reader.peek();
         match c {
             Ok(value) => {
-                if value == ")" {
+                if value == end {
                     reader.next();
-                    return Ok(MalType::List(result));
+                    match end {
+                        ")" => return Ok(MalType::List(result)),
+                        "]" => return Ok(MalType::Vector(result)),
+                        "}" => return to_hashmap(result),
+                        _ => return Err("read_list unknown end value".to_string()),
+                    }
                 } else {
                     let item = read_form(reader);
                     result.push(item?);
@@ -88,11 +93,63 @@ pub fn read_form(reader: &mut Reader) -> MalRet {
     match c {
         Ok(v) => {
             match &v[..] {
-                "(" => read_list(reader),
+                "(" => read_list(reader, ")"),
+                "[" => read_list(reader, "]"),
+                "{" => read_list(reader, "}"),
+                "^" => {
+                    println!("With meta");
+                    reader.next();
+                    let meta = read_list(reader, "}")?;
+                    let item = read_form(reader)?;
+                    let mut result : Vec<MalType> = vec![];
+                    result.push(MalType::Sym("with-meta".to_string()));
+                    result.push(item);
+                    result.push(meta);
+                    Ok(MalType::List(result))
+                },
+                "'" => {
+                    reader.next();
+                    let mut result : Vec<MalType> = vec![];
+                    result.push(MalType::Sym("quote".to_string()));
+                    let next = read_form(reader)?;
+                    result.push(next);
+                    Ok(MalType::List(result))
+                },
+                "`" => {
+                    reader.next();
+                    let mut result : Vec<MalType> = vec![];
+                    result.push(MalType::Sym("quasiquote".to_string()));
+                    let next = read_form(reader)?;
+                    result.push(next);
+                    Ok(MalType::List(result))
+                },
+                "~" => {
+                    reader.next();
+                    let mut result : Vec<MalType> = vec![];
+                    result.push(MalType::Sym("unquote".to_string()));
+                    let next = read_form(reader)?;
+                    result.push(next);
+                    Ok(MalType::List(result))
+                },
+                "@" => {
+                    reader.next();
+                    let mut result : Vec<MalType> = vec![];
+                    result.push(MalType::Sym("deref".to_string()));
+                    let next = read_form(reader)?;
+                    result.push(next);
+                    Ok(MalType::List(result))
+                },
+                "~@" => {
+                    reader.next();
+                    let mut result : Vec<MalType> = vec![];
+                    result.push(MalType::Sym("splice-unquote".to_string()));
+                    let next = read_form(reader)?;
+                    result.push(next);
+                    Ok(MalType::List(result))
+                },
                 _ => read_atom(reader)
             }
         },
         Err(v) => Err(v),
     }
 }
-
