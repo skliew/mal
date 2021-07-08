@@ -97,55 +97,37 @@ pub fn read_form(reader: &mut Reader) -> MalRet {
                 "[" => read_list(reader, "]"),
                 "{" => read_list(reader, "}"),
                 "^" => {
-                    println!("With meta");
                     reader.next();
                     let meta = read_list(reader, "}")?;
                     let item = read_form(reader)?;
-                    let mut result : Vec<MalType> = vec![];
-                    result.push(MalType::Sym("with-meta".to_string()));
-                    result.push(item);
-                    result.push(meta);
-                    Ok(MalType::List(result))
+                    Ok(list![
+                       MalType::Sym("with-meta".to_string()),
+                       item, meta])
                 },
                 "'" => {
                     reader.next();
-                    let mut result : Vec<MalType> = vec![];
-                    result.push(MalType::Sym("quote".to_string()));
                     let next = read_form(reader)?;
-                    result.push(next);
-                    Ok(MalType::List(result))
+                    Ok(list![MalType::Sym("quote".to_string()), next])
                 },
                 "`" => {
                     reader.next();
-                    let mut result : Vec<MalType> = vec![];
-                    result.push(MalType::Sym("quasiquote".to_string()));
                     let next = read_form(reader)?;
-                    result.push(next);
-                    Ok(MalType::List(result))
+                    Ok(list![MalType::Sym("quasiquote".to_string()), next])
                 },
                 "~" => {
                     reader.next();
-                    let mut result : Vec<MalType> = vec![];
-                    result.push(MalType::Sym("unquote".to_string()));
                     let next = read_form(reader)?;
-                    result.push(next);
-                    Ok(MalType::List(result))
+                    Ok(list![MalType::Sym("unquote".to_string()), next])
                 },
                 "@" => {
                     reader.next();
-                    let mut result : Vec<MalType> = vec![];
-                    result.push(MalType::Sym("deref".to_string()));
                     let next = read_form(reader)?;
-                    result.push(next);
-                    Ok(MalType::List(result))
+                    Ok(list![MalType::Sym("deref".to_string()), next])
                 },
                 "~@" => {
                     reader.next();
-                    let mut result : Vec<MalType> = vec![];
-                    result.push(MalType::Sym("splice-unquote".to_string()));
                     let next = read_form(reader)?;
-                    result.push(next);
-                    Ok(MalType::List(result))
+                    Ok(list![MalType::Sym("splice-unquote".to_string()), next])
                 },
                 _ => read_atom(reader)
             }

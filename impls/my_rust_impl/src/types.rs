@@ -26,3 +26,14 @@ pub fn to_hashmap(seq: Vec<MalType>) -> Result<MalType, String> {
     }
     Ok(MalType::Hash(hm))
 }
+
+#[macro_export]
+macro_rules! list {
+    ( $($x:expr),* ) => {{
+        let mut result : Vec<MalType> = vec![];
+        $(
+            result.push($x);
+        )*
+        MalType::List(result)
+    }}
+}

@@ -1,4 +1,6 @@
 use std::io::Write;
+
+#[macro_use]
 mod types;
 mod printer;
 mod reader;
