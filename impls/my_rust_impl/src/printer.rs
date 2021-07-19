@@ -45,5 +45,8 @@ pub fn pr_maltype(mal: &MalType) -> String {
             result_string.push_str("}");
             return result_string;
         }
+        MalType::Func(h) => {
+            format!("#<fn {:?}>", h)
+        }
     }
 }

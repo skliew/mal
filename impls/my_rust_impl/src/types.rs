@@ -10,9 +10,13 @@ pub enum MalType {
     List(Vec<MalType>),
     Vector(Vec<MalType>),
     Hash(FnvHashMap<String, MalType>),
+    Func(fn(MalArgs) -> MalRet)
 }
 
+pub type MalArgs = Vec<MalType>;
 pub type MalRet = Result<MalType, String>;
+
+pub type Env = FnvHashMap<String, MalType>;
 
 pub fn to_hashmap(seq: Vec<MalType>) -> Result<MalType, String> {
     let mut hm : FnvHashMap<String, MalType> = FnvHashMap::default();
@@ -36,4 +40,13 @@ macro_rules! list {
         )*
         MalType::List(result)
     }}
+}
+
+impl MalType {
+    pub fn apply(&self, args: MalArgs) -> MalRet {
+        match self {
+            MalType::Func(f) => f(args),
+            _ => Err("Not a function".to_string())
+        }
+    }
 }
