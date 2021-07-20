@@ -20,20 +20,14 @@ fn eval_ast(input: MalType, env: &Env) -> MalRet {
             env.get(&s).ok_or("not found".to_string())?.clone()
             ),
         MalType::List(v) => {
-            let mut result : MalArgs = vec![];
-            for i in v.iter() {
-                result.push(eval(i.clone(), env)?);
-            }
-            // let result = v.iter().map(|i| eval(i.clone(), env)? ).collect();
-            Ok(MalType::List(result))
+            v.iter().map(|i| eval(i.clone(), env))
+                .collect::<Result<Vec<MalType>, String>>()
+                .map(|v| MalType::List(v))
         },
         MalType::Vector(v) => {
-            let mut result : MalArgs = vec![];
-            for i in v.iter() {
-                result.push(eval(i.clone(), env)?);
-            }
-            // let result = v.iter().map(|i| eval(i.clone(), env)? ).collect();
-            Ok(MalType::Vector(result))
+            v.iter().map(|i| eval(i.clone(), env))
+                .collect::<Result<Vec<MalType>, String>>()
+                .map(|v| MalType::Vector(v))
         },
         MalType::Hash(h) => {
             let mut result : FnvHashMap<String, MalType> = FnvHashMap::default();
